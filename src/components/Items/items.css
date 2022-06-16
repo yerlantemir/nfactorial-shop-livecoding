@@ -1,0 +1,6 @@
+.items-root {
+    width: 49%;
+    border-right: 1px solid red;
+    display: flex;
+    flex-wrap: wrap;
+}
