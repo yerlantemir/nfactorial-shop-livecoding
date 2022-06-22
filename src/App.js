@@ -1,79 +1,66 @@
-import './App.css';
-import {Cart} from "./components/Cart";
-import {Items} from "./components/Items";
-import {useEffect, useState} from "react";
-
-const mockItems = [
-    {
-        id: 1,
-        label: `Dalida's hat`,
-        description: 'The most amazing hat in the world',
-        price: 200,
-        inCart: false,
-    },
-    {
-        id: 2,
-        label: `Aidar's keyboard`,
-        description: 'This keyboard will make you 10x programmer',
-        price: 500,
-        inCart: false,
-    },
-    {
-        id: 3,
-        label: `Milk`,
-        description: 'The milk',
-        price: 400,
-        inCart: true,
-    },
-]
-
+import "./App.css";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 function App() {
-    const [items, setItems] = useState(mockItems);
+  const [blogs, setBlogs] = useState([]);
 
-    const onChange = (id) => {
-        const newItems = items.map((item) => {
-            console.log(item, id)
-            if (id === item.id) {
-                return {
-                    ...item,
-                    inCart: !item.inCart
-                }
-            }
-            return item;
-        })
-       setItems(newItems);
-    }
-    useEffect(() => {
-        setItems(
-           JSON.parse(
-               localStorage.getItem('items')
-           )
-       )
-    }, [])
-    useEffect(() => {
-        window.addEventListener("beforeunload", (ev) =>
-        {
-            localStorage.setItem('items', JSON.stringify(items));
-        });
-    }, [items])
+  const [author, setAuthor] = useState("");
+  const [content, setContent] = useState("");
+  const [title, setTitle] = useState("");
+
+  useEffect(() => {
+    axios.get("http://localhost:3000/blogs").then((response) => {
+      setBlogs(response.data);
+    });
+  }, []);
+
+  const onCreateClick = () => {
+    axios
+      .post("http://localhost:3000/blogs", {
+        author,
+        content,
+        title,
+        createdAt: new Date().toISOString(),
+      })
+      .then((response) => {
+        setBlogs([...blogs, response.data]);
+      });
+  };
   return (
-      <div className="root">
-          <Items itemsInShop={items.filter((item) => !item.inCart)}
-                 onChange={onChange}
-          />
-        <Cart itemsInCart={items.filter((item) => item.inCart)} onChange={onChange}/>
+    <div style={{ padding: 50 }}>
+      <div style={{ display: "flex" }}>
+        <input
+          value={author}
+          onChange={(event) => {
+            setAuthor(event.target.value);
+          }}
+          placeholder="author"
+        />
+        <textarea
+          value={content}
+          onChange={(event) => {
+            setContent(event.target.value);
+          }}
+          placeholder="content"
+        />
+        <input
+          value={title}
+          onChange={(event) => {
+            setTitle(event.target.value);
+          }}
+          placeholder="title"
+        />
+        <button onClick={onCreateClick}>Create</button>
       </div>
+      {blogs.map((blog) => (
+        <div>
+          <h5>{blog.author}</h5>
+          <p>{blog.content}</p>
+        </div>
+      ))}
+    </div>
   );
 }
 
 export default App;
-
-// <App> onChange => Items => Item
-//     <Items>
-//         <Item></Item>
-//     </Items>
-//     <Cart>
-//         <Item></Item>
-//     </Cart>
-// </App>
